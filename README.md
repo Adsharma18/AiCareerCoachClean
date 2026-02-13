@@ -42,60 +42,7 @@ Supports **English + Hindi** (AI detects language and responds accordingly)
 | AI          | Groq API — Llama-3.1-8B-Instant     | Fast & affordable LLM inference      |
 | PDF         | ReportLab                           | Server-side PDF generation           |
 
-CareerDebateCoach/
-├── backend/                    # FastAPI + Groq + ReportLab
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py
-│   │   ├── config.py
-│   │   ├── dependencies.py
-│   │   ├── models.py
-│   │   ├── database.py
-│   │   ├── routers/
-│   │   │   ├── __init__.py
-│   │   │   ├── chat.py
-│   │   │   └── pdf.py
-│   │   └── services/
-│   │       ├── __init__.py
-│   │       ├── llm_service.py
-│   │       └── pdf_service.py
-│   ├── .env
-│   ├── requirements.txt
-│   └── run.py
-│
-├── frontend/                   # React + Vite + Tailwind
-│   ├── public/
-│   │   ├── index.html
-│   │   └── favicon.ico
-│   ├── src/
-│   │   ├── assets/
-│   │   │   └── logo.svg
-│   │   ├── components/
-│   │   │   ├── ChatBubble.jsx
-│   │   │   ├── InputArea.jsx
-│   │   │   └── PdfDownloadButton.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   └── ChatPage.jsx
-│   │   ├── store/
-│   │   │   └── chatStore.js
-│   │   ├── hooks/
-│   │   │   └── useChat.js
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   ├── .env.local
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   ├── vite.config.js
-│   ├── package.json
-│   └── index.html
-│
-├── .gitignore
-├── README.md
-└── LICENSE
+
 
 ### Backend
 
