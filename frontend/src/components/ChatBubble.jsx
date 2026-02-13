@@ -3,6 +3,7 @@
 
 const ChatBubble = ({ message }) => {
   const isUser = message.role === 'user';
+  const isError = message.isError || false;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
@@ -12,13 +13,15 @@ const ChatBubble = ({ message }) => {
           px-4 py-3 
           rounded-2xl 
           shadow-sm
-          ${isUser 
-            ? 'bg-blue-600 text-white rounded-br-none' 
-            : 'bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200'
+          ${isError
+            ? 'bg-red-900/20 border border-red-700/50 text-red-300 rounded-bl-none'
+            : isUser 
+              ? 'bg-green-600 text-white rounded-br-none' 
+              : 'bg-gray-100 text-gray-900 rounded-bl-none border border-gray-200'
           }
         `}
       >
-        <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
+        <div className={`whitespace-pre-wrap text-[15px] leading-relaxed ${isError ? 'font-medium' : ''}`}>
           {message.content}
         </div>
       </div>

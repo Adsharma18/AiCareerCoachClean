@@ -1,8 +1,25 @@
+"""
+LLM Service - Handles all Groq API calls for AI responses.
+
+This service is kept simple and beginner-friendly:
+- Uses async/await for better performance
+- Accepts structured message history (list of dicts) - better for LLMs
+- Handles errors gracefully
+- Supports English and Hindi
+"""
+
 from groq import Groq
+from typing import List, Dict, Optional
+import logging
+
 from ..config import settings
 
+logger = logging.getLogger(__name__)
+
+# Initialize Groq client once (reused for all requests)
 client = Groq(api_key=settings.GROQ_API_KEY)
 
+# System prompts for different languages
 SYSTEM_PROMPT_EN = """
 You are Coach Deb, an expert Career Debate Coach.
 
@@ -24,37 +41,57 @@ SYSTEM_PROMPT_HI = """
 4. यूज़र का सवाल दोहराएं नहीं
 """
 
-def generate_llm_response(
+
+async def generate_llm_response(
     user_message: str,
-    history_text: str,
+    history: Optional[List[Dict[str, str]]] = None,
     is_hindi: bool = False
-):
+) -> str:
+    """
+    Generate AI response using Groq LLM.
+
+    Args:
+        user_message: The current user message
+        history: List of previous messages in format [{"role": "user", "content": "..."}, ...]
+        is_hindi: If True, use Hindi system prompt
+
+    Returns:
+        AI response text (or error message if something goes wrong)
+    """
+    # Choose system prompt based on language
     system_prompt = SYSTEM_PROMPT_HI if is_hindi else SYSTEM_PROMPT_EN
 
-    messages = [
-        {"role": "system", "content": system_prompt}
-    ]
+    # Build messages list (this is what Groq API expects)
+    messages = [{"role": "system", "content": system_prompt}]
 
-    if history_text:
-        messages.append({
-            "role": "assistant",
-            "content": f"Previous conversation summary:\n{history_text}"
-        })
+    # Add conversation history if provided
+    # History should already be in the right format: [{"role": "...", "content": "..."}]
+    if history:
+        # Filter out system messages from history (we already have one)
+        for msg in history:
+            if msg.get("role") != "system":
+                messages.append({
+                    "role": msg.get("role", "user"),
+                    "content": msg.get("content", "")
+                })
 
-    messages.append({
-        "role": "user",
-        "content": user_message
-    })
+    # Add current user message
+    messages.append({"role": "user", "content": user_message})
 
     try:
+        # Call Groq API (this is synchronous, but we wrap it in async function)
+        # In production, you might want to use asyncio.to_thread() for true async
         completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,
-            temperature=0.6,
-            max_tokens=800
+            temperature=0.6,  # Balanced creativity
+            max_tokens=800    # Reasonable length
         )
 
-        return completion.choices[0].message.content.strip()
+        reply = completion.choices[0].message.content.strip()
+        return reply
 
     except Exception as e:
+        # Log the error for debugging, but return user-friendly message
+        logger.exception("Error calling Groq LLM API")
         return "AI is temporarily unavailable. Please try again."

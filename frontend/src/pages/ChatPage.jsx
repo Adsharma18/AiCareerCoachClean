@@ -1,5 +1,5 @@
 // src/pages/ChatPage.jsx
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChatStore } from '../store/chatStore';
 import ChatBubble from '../components/ChatBubble';
 import InputArea from '../components/InputArea';
@@ -10,19 +10,18 @@ import Navbar from '../components/Navbar';
 const ChatPage = () => {
   const { messages, addMessage, goal } = useChatStore();
   const { mutate: sendMessage, isPending } = useChat();
-
+  const [lastError, setLastError] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isPending]);
 
   const handleSend = (text) => {
     if (!text || !text.trim()) return;
-
     const userMessage = { role: 'user', content: text.trim() };
     addMessage(userMessage);
+    setLastError(null);
 
     sendMessage(
       {
@@ -35,19 +34,33 @@ const ChatPage = () => {
             role: 'assistant',
             content: data?.reply || 'No response from coach.',
           });
+          setLastError(null);
         },
-        onError: () => {
+        onError: (err) => {
+          const errorMessage = err?.message || 'Something went wrong. Please try again.';
+          setLastError(errorMessage);
           addMessage({
             role: 'assistant',
-            content: 'Something went wrong. Please try again.',
+            content: `❌ Error: ${errorMessage}`,
+            isError: true,
           });
         },
       }
     );
   };
 
-  const lastMsg = messages[messages.length - 1];
+  const handleRetry = () => {
+    if (messages.length > 0) {
+      const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+      if (lastUserMessage) {
+        const filteredMessages = messages.filter(m => !m.isError);
+        useChatStore.setState({ messages: filteredMessages });
+        handleSend(lastUserMessage.content);
+      }
+    }
+  };
 
+  const lastMsg = messages[messages.length - 1];
   const showPdfButton =
     lastMsg?.role === 'assistant' &&
     typeof lastMsg.content === 'string' &&
@@ -97,6 +110,26 @@ const ChatPage = () => {
                   <div className="w-2.5 h-2.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                 </div>
                 <span className="text-gray-300 text-sm font-medium">AI is thinking...</span>
+              </div>
+            </div>
+          )}
+
+          {lastError && !isPending && (
+            <div className="flex justify-start">
+              <div className="bg-red-900/30 border border-red-700/50 rounded-2xl px-6 py-4 max-w-md">
+                <div className="flex items-start gap-3">
+                  <div className="text-red-400 text-xl">⚠️</div>
+                  <div className="flex-1">
+                    <p className="text-red-300 text-sm font-medium mb-2">Failed to send message</p>
+                    <p className="text-red-400/80 text-xs mb-3">{lastError}</p>
+                    <button
+                      onClick={handleRetry}
+                      className="text-xs px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-600/50 rounded-lg text-red-300 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
