@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..dependencies import get_db                          # assuming you have this
 from ..models import ChatHistory, ChatRequest             # import your models
-from ..services.pdf_service import generate_pdf_report    # real service function
+from ..services.pdf_services import generate_pdf_report    # real service function
 
 router = APIRouter(prefix="/api", tags=["pdf"])
 
