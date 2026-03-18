@@ -21,7 +21,7 @@ export default function Navbar() {
             <img
               src={logo}
               alt="Career Debate Coach"
-              className="h-20 w-auto object-contain"
+              className="h-15 w-auto object-contain"
             />
 
             {/* Optional Title (hidden on small screens) */}
